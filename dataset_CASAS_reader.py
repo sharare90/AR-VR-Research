@@ -1,10 +1,10 @@
 import csv
 
-len_intervals = 1
+len_intervals = 6
 list_of_intervals = [i for i in range(0, 24, len_intervals)]
-list_of_time_tasks = [{} for i in list_of_intervals]
-list_of_days_tasks = list()
-today_list = [0 for i in range(24)]
+list_of_tasks_frequency = [{} for i in list_of_intervals]
+list_of_daily_tasks = list()
+today_list = [0 for i in range(0, 24, len_intervals)]
 previous_date = "2009-06-10"
 with open("./dataset/processed_data.txt", "w") as processed_data:
     with open("./dataset/data-2residents.csv") as input_file:
@@ -14,26 +14,23 @@ with open("./dataset/processed_data.txt", "w") as processed_data:
             date = line[0]
             time = int(line[1].split(":")[0])
             task = line[4]
-            for i in list_of_intervals:
-                dic_of_tasks = list_of_time_tasks[i]
-                if (time >= i) and (time < i + len_intervals):
-                    if task in dic_of_tasks:
-                        dic_of_tasks[task] += 1
-                    else:
-                        dic_of_tasks[task] = 1
+            i = int(time / len_intervals)
+            tasks_frequency_i = list_of_tasks_frequency[i]
+            if task in tasks_frequency_i:
+                tasks_frequency_i[task] += 1
+            else:
+                tasks_frequency_i[task] = 1
 
-                    if date != previous_date:
-                        list_of_days_tasks.append(today_list)
-                        today_list = [0 for i in range(24)]
+            if date != previous_date:
+                list_of_daily_tasks.append(today_list)
+                today_list = [0 for i in range(0, 24, len_intervals)]
 
-                    today_list[i] += 1
+            today_list[i] += 1
+            previous_date = date
 
-                    previous_date = date
+        list_of_daily_tasks.append(today_list)
 
-    list_of_days_tasks.append(today_list)
-
-    for i in list_of_time_tasks:
+    for i in list_of_tasks_frequency:
         processed_data.write(str(i) + "\n")
-
-    print(list_of_days_tasks)
-    print(len(list_of_days_tasks))
+    print(list_of_daily_tasks)
+    print(len(list_of_daily_tasks))
