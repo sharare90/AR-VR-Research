@@ -61,13 +61,13 @@ class User:
         self.request = ""
         self.user_profile_dir = user_profile_dir
         self.intervals_data = self.process()
-        print("test")
 
     def step(self):
         current_time = self.env.get_time()
         interval_index = int(current_time.hour / 2)
         interval_actions = self.intervals_data[interval_index].sample()
-        print('{time}: {actions}'.format(time=current_time, actions=interval_actions))
+        return current_time, interval_actions
+        # print('{time}: {actions}'.format(time=current_time, actions=interval_actions))
 
     def process(self):
         daily_tasks = os.path.join(self.user_profile_dir, 'daily_tasks.txt')
