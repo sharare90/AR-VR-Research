@@ -9,5 +9,5 @@ sns.set(style="ticks", color_codes=True)
 
 data = pd.read_csv("./dataset/" + file_name + "/generated_data.csv")
 data = data.sort_values(by=["time"])
-sns.catplot(x="time", y="task", kind="swarm", data=data)
+sns.catplot(x="time", y="action", kind="swarm", data=data)
 plt.show()
