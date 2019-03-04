@@ -47,7 +47,7 @@ def action_to_request_house2(action):
     return request
 
 
-with open("./dataset/house_acts_reqs.csv", "w") as house_act_req:
+with open("./dataset/house_acts_reqs_train.csv", "w") as house_act_req_tr:
     with open("./dataset/house1/generated_data.csv") as house1_gen_data:
         data1 = csv.reader(house1_gen_data, delimiter=',')
         for line in data1:
@@ -55,7 +55,7 @@ with open("./dataset/house_acts_reqs.csv", "w") as house_act_req:
             action = line[1]
             request = action_to_request_house1(action)
             if request != "":
-                house_act_req.write("house1," + time + "," + action + "," + request + "\n")
+                house_act_req_tr.write("house1," + time + "," + action + "," + request + "\n")
     with open("./dataset/house2/generated_data.csv") as house2_gen_data:
         data2 = csv.reader(house2_gen_data, delimiter=',')
         for line in data2:
@@ -63,4 +63,22 @@ with open("./dataset/house_acts_reqs.csv", "w") as house_act_req:
             action = line[1]
             request = action_to_request_house2(action)
             if request != "":
-                house_act_req.write("house2," + time + "," + action + "," + request + "\n")
+                house_act_req_tr.write("house2," + time + "," + action + "," + request + "\n")
+
+with open("./dataset/house_acts_reqs_test.csv", "w") as house_act_req_te:
+    with open("./dataset/house1/time_task.csv") as house1_gen_data:
+        data1 = csv.reader(house1_gen_data, delimiter=',')
+        for line in data1:
+            time = line[0]
+            action = line[1]
+            request = action_to_request_house1(action)
+            if request != "":
+                house_act_req_te.write("house1," + time + "," + action + "," + request + "\n")
+    with open("./dataset/house2/time_task.csv") as house2_gen_data:
+        data2 = csv.reader(house2_gen_data, delimiter=',')
+        for line in data2:
+            time = line[0]
+            action = line[1]
+            request = action_to_request_house2(action)
+            if request != "":
+                house_act_req_te.write("house2," + time + "," + action + "," + request + "\n")

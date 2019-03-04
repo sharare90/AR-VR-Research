@@ -1,14 +1,14 @@
 import csv
+from setting import len_intervals, house
 
-len_intervals = 2
-file_name = "house1"
+file_name = house
 list_of_intervals = [i for i in range(0, 24, len_intervals)]
 list_of_tasks_frequency = [{} for i in list_of_intervals]
 list_of_daily_tasks = list()
 today_list = [0 for i in range(0, 24, len_intervals)]
 interval_task = []
 previous_date = "2009-06-10"
-with open("./dataset/" + file_name + "/processed_data.txt", "w") as processed_data:
+with open("./dataset/train_" + file_name + "/processed_data.txt", "w") as processed_data:
     with open("./dataset/" + file_name + ".csv") as input_file:
         input_data = csv.reader(input_file, delimiter=",")
 

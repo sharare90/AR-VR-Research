@@ -1,6 +1,6 @@
 import csv
+from setting import len_intervals
 
-len_intervals = 2
 
 with open("./dataset/house1.csv", "w") as time_task:
     with open("./dataset/house1_raw_data.csv") as csvfile:
