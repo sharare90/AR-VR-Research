@@ -8,7 +8,7 @@ list_of_daily_tasks = list()
 today_list = [0 for i in range(0, 24, len_intervals)]
 interval_task = []
 previous_date = "2009-06-10"
-with open("./dataset/train_" + file_name + "/processed_data.txt", "w") as processed_data:
+with open("./dataset/" + file_name + "/processed_data_train.txt", "w") as processed_data:
     with open("./dataset/" + file_name + ".csv") as input_file:
         input_data = csv.reader(input_file, delimiter=",")
 
@@ -39,10 +39,10 @@ with open("./dataset/train_" + file_name + "/processed_data.txt", "w") as proces
     for i in list_of_tasks_frequency:
         processed_data.write(str(i) + "\n")
 
-with open("./dataset/" + file_name + "/daily_tasks.txt", "w") as daily_tasks:
+with open("./dataset/" + file_name + "/daily_tasks_train.txt", "w") as daily_tasks:
     for i in range(len(list_of_daily_tasks)):
         daily_tasks.write(str(list_of_daily_tasks[i]) + "\n")
 
-with open("./dataset/" + file_name + "/time_task.csv", "w") as time_task:
+with open("./dataset/" + file_name + "/time_task_train.csv", "w") as time_task:
     for i in interval_task:
         time_task.write(i + "\n")

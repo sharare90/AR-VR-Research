@@ -1,2 +1,2 @@
-len_intervals = 2
+len_intervals = 1
 house = "house2"

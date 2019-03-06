@@ -2,7 +2,7 @@ import csv
 import random
 from setting import house
 
-with open("./dataset/" + house + "validation_" + house + ".csv", "w") as validation_h1:
+with open("./dataset/validation_" + house + ".csv", "w") as validation_h1:
     with open("./dataset/house2.csv") as h1:
         data1 = csv.reader(h1, delimiter=",")
         dates = {}
