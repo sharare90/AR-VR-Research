@@ -1,6 +1,6 @@
 import numpy as np
 import csv
-from setting import house
+from setting import house, phase
 
 
 def action_to_request_house1(action):
@@ -48,8 +48,8 @@ def action_to_request_house2(action):
     return request
 
 
-with open("./dataset/" + house + "_acts_reqs_train.csv", "w") as house_act_req_tr:
-    with open("./dataset/" + house + "/generated_data_train.csv") as house1_gen_data:
+with open("./dataset/" + house + "_acts_reqs_" + phase + ".csv", "w") as house_act_req_tr:
+    with open("./dataset/" + house + "/generated_data_" + phase + ".csv") as house1_gen_data:
         data1 = csv.reader(house1_gen_data, delimiter=',')
         for line in data1:
             time = line[0]
@@ -57,7 +57,7 @@ with open("./dataset/" + house + "_acts_reqs_train.csv", "w") as house_act_req_t
             request = action_to_request_house1(action)
             if request != "":
                 house_act_req_tr.write("house1," + time + "," + action + "," + request + "\n")
-    with open("./dataset/house2/generated_data_train.csv") as house2_gen_data:
+    with open("./dataset/house2/generated_data_" + phase + ".csv") as house2_gen_data:
         data2 = csv.reader(house2_gen_data, delimiter=',')
         for line in data2:
             time = line[0]
@@ -66,20 +66,20 @@ with open("./dataset/" + house + "_acts_reqs_train.csv", "w") as house_act_req_t
             if request != "":
                 house_act_req_tr.write("house2," + time + "," + action + "," + request + "\n")
 
-# with open("./dataset/house_acts_reqs_test.csv", "w") as house_act_req_te:
-#     with open("./dataset/house1/time_task_test.csv") as house1_gen_data:
-#         data1 = csv.reader(house1_gen_data, delimiter=',')
-#         for line in data1:
-#             time = line[0]
-#             action = line[1]
-#             request = action_to_request_house1(action)
-#             if request != "":
-#                 house_act_req_te.write("house1," + time + "," + action + "," + request + "\n")
-#     with open("./dataset/house2/time_task_all.csv") as house2_gen_data:
-#         data2 = csv.reader(house2_gen_data, delimiter=',')
-#         for line in data2:
-#             time = line[0]
-#             action = line[1]
-#             request = action_to_request_house2(action)
-#             if request != "":
-#                 house_act_req_te.write("house2," + time + "," + action + "," + request + "\n")
+# with open("./dataset/" + house + "_acts_reqs_test.csv", "w") as house_act_req_te:
+    # with open("./dataset/" + house + "/time_task_test.csv") as house1_gen_data:
+    #     data1 = csv.reader(house1_gen_data, delimiter=',')
+    #     for line in data1:
+    #         time = line[0]
+    #         action = line[1]
+    #         request = action_to_request_house1(action)
+    #         if request != "":
+    #             house_act_req_te.write("house1," + time + "," + action + "," + request + "\n")
+    # with open("./dataset/house2/time_task_all.csv") as house2_gen_data:
+    #     data2 = csv.reader(house2_gen_data, delimiter=',')
+    #     for line in data2:
+    #         time = line[0]
+    #         action = line[1]
+    #         request = action_to_request_house2(action)
+    #         if request != "":
+    #             house_act_req_te.write("house2," + time + "," + action + "," + request + "\n")

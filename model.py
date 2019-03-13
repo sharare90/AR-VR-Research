@@ -1,7 +1,7 @@
 import os
 import numpy as np
 from datetime import datetime, timedelta
-from setting import len_intervals
+from setting import len_intervals, phase
 
 
 class Environment:
@@ -71,7 +71,7 @@ class User:
         # print('{time}: {actions}'.format(time=current_time, actions=interval_actions))
 
     def process(self):
-        daily_tasks = os.path.join(self.user_profile_dir, 'daily_tasks_train.txt')
+        daily_tasks = os.path.join(self.user_profile_dir, 'daily_tasks_' + phase + '.txt')
         num_actions_per_interval = []
         with open(daily_tasks) as daily_tasks_info:
             for line in daily_tasks_info:
@@ -81,7 +81,7 @@ class User:
 
         num_actions_per_interval = np.array(num_actions_per_interval)
 
-        action_probs_file = os.path.join(self.user_profile_dir, 'processed_data_train.txt')
+        action_probs_file = os.path.join(self.user_profile_dir, 'processed_data_' + phase + '.txt')
         action_probs = []
 
         interval_counter = 0
@@ -97,8 +97,8 @@ class User:
                     action_name = data[0].strip()[1:-1]
                     if 'end' in action_name:
                         continue
-
-                    interval_action.append((action_name, 2 * float(data[1]) / num_actions_in_current_interval))
+                    if num_actions_in_current_interval != 0:
+                        interval_action.append((action_name, 2 * float(data[1]) / num_actions_in_current_interval))
                     interval_action = sorted(interval_action, key=lambda x: x[1], reverse=True)
                 action_probs.append(interval_action)
 

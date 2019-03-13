@@ -1,5 +1,5 @@
 from model import Environment, Server, User, Agent
-from setting import house, len_intervals
+from setting import house, len_intervals, phase
 
 
 file_name = house
@@ -10,7 +10,7 @@ user = User(env, "./dataset/" + file_name + "/")
 
 agent = Agent(env, server, user)
 
-with open("./dataset/" + file_name + "/generated_data_train.csv", "w") as gen_data:
+with open("./dataset/" + file_name + "/generated_data_" + phase + ".csv", "w") as gen_data:
     for _ in range(10000):
         env.step()
         time, interval_actions = user.step()

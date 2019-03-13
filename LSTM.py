@@ -1,15 +1,50 @@
 import tensorflow as tf
-from setting import len_intervals, num_valid_requests
+import numpy as np
 
-requests_in_one_interval = num_valid_requests  # number of valid requests
-interval_steps = 24 / len_intervals  # number of intervals in a single day
-num_classes = num_valid_requests
-lstm_size = 50
+from datasets import DatasetTest, DatasetTrain
+from setting import house
 
-# tf Graph input
-X = tf.placeholder("float", [None, interval_steps, requests_in_one_interval])
-Y = tf.placeholder("float", [None, num_classes])
+INPUT_SIZE = 5
+OUTPUT_SIZE = 5
+TIMESTEP = 24
+BATCH_SIZE = 2
 
-# Define weights
-weights = {'out': tf.Variable(tf.random_normal([lstm_size, num_classes]))}
-biases = {'out': tf.Variable(tf.random_normal([num_classes]))}
+
+def build_model(output_size, rnn_units):
+    rnn = tf.keras.layers.LSTM
+    model = tf.keras.Sequential([
+
+        rnn(rnn_units,
+            return_sequences=True,
+            recurrent_initializer='glorot_uniform',
+            stateful=False),
+        tf.keras.layers.Dense(output_size)
+    ])
+    return model
+
+
+model = build_model(OUTPUT_SIZE, 20)
+model.compile(optimizer='adam', loss='mean_squared_error')
+
+inp = tf.placeholder(dtype=tf.float32, shape=(None, TIMESTEP, INPUT_SIZE))
+output = model(inp)
+
+train_dataset = DatasetTrain("./dataset/" + house + "/LSTM_input_train_req.npy", batch_size=BATCH_SIZE)
+test_dataset = DatasetTest("./dataset/" + house + "/LSTM_input_test_req.npy", batch_size=1)
+for i in range(1):
+    x, y = train_dataset.next_batch()
+    model.fit(x, y, batch_size=BATCH_SIZE)
+
+
+print('Testing:')
+print('======================================')
+TEST_DAYS_NUM = 100
+
+for i in range(TEST_DAYS_NUM):
+    # read day i
+    day_i_x, day_i_y = test_dataset.next_batch()
+    day_i_output = model.predict(day_i_x)
+
+    # distance between day_i output and day_i_y
+    print(day_i_y)
+    print(day_i_output)
