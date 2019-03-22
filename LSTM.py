@@ -9,7 +9,7 @@ from setting import house
 INPUT_SIZE = 5
 OUTPUT_SIZE = 5
 TIMESTEP = 24
-BATCH_SIZE = 2
+BATCH_SIZE = 32
 
 
 def build_model(output_size, rnn_units):
@@ -25,9 +25,54 @@ def build_model(output_size, rnn_units):
     return model
 
 
+def precision_threshold(threshold=0.5):
+    def precision(y_true, y_predict):
+        threshold_value = threshold
+        y_predict = tf.cast(tf.greater(tf.clip_by_value(y_predict, 0, 1), threshold_value), tf.float32)
+        true_positives = tf.round(tf.reduce_sum(tf.clip_by_value(y_true * y_predict, 0, 1)))
+        predicted_positives = tf.reduce_sum(y_predict)
+        precision_ratio = true_positives / (predicted_positives + 10e-6)
+
+        return precision_ratio
+
+    return precision
+
+
+def recall_threshold(threshold=0.5):
+    def recall(y_true, y_predict):
+        threshold_value = threshold
+        y_predict = tf.cast(tf.greater(tf.clip_by_value(y_predict, 0, 1), threshold_value), tf.float32)
+        true_positives = tf.round(tf.reduce_sum(tf.clip_by_value(y_true * y_predict, 0, 1)))
+        possible_positives = tf.reduce_sum(tf.clip_by_value(y_true, 0 , 1))
+        recall_ratio = true_positives / (possible_positives + 10e-6)
+
+        return recall_ratio
+
+    return recall
+
+
+def f1_score_threshold(threshold=0.5):
+    def f1_score(y_true, y_predict):
+        threshold_value = threshold
+        y_predict = tf.cast(tf.greater(tf.clip_by_value(y_predict, 0, 1), threshold_value), tf.float32)
+        true_positives = tf.round(tf.reduce_sum(tf.clip_by_value(y_true * y_predict, 0, 1)))
+        predicted_positives = tf.reduce_sum(y_predict)
+        precision_ratio = true_positives / (predicted_positives + 10e-6)
+
+        possible_positives = tf.reduce_sum(tf.clip_by_value(y_true, 0, 1))
+        recall_ratio = true_positives / (possible_positives + 10e-6)
+
+        return (2 * recall_ratio * precision_ratio) / (recall_ratio + precision_ratio + 10e-6)
+
+    return f1_score
+
 model = build_model(OUTPUT_SIZE, 20)
-model.compile(optimizer='adam', loss='binary_crossentropy',
-              metrics=['binary_accuracy', km.binary_precision(), km.binary_recall(), km.binary_f1_score()])
+model.compile(
+    optimizer='adam',
+    loss='binary_crossentropy',
+    # metrics=['binary_accuracy', precision_threshold(0.3), km.binary_precision(), km.binary_recall(), km.binary_f1_score()]
+    metrics=[precision_threshold(0.3), recall_threshold(0.3), f1_score_threshold(0.3)]
+)
 
 inp = tf.placeholder(dtype=tf.float32, shape=(None, TIMESTEP, INPUT_SIZE))
 output = model(inp)
@@ -52,7 +97,7 @@ with tf.Session() as sess:
     print('Testing:')
     print('======================================')
     TEST_DAYS_NUM = 100
-    THRESHOLD = 0.5
+    THRESHOLD = 0.3
 
     for i in range(TEST_DAYS_NUM):
         # read day i
