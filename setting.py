@@ -1,6 +1,6 @@
 len_intervals = 1
 house = "house2"
-phase = "test"
+phase = "train"
 num_valid_requests = 13  # weather, traffic, news, parking, recipe
 # dict_reqs_nums = {'Summary of News': 0, 'Weather Report': 1, 'Parking status': 2, 'Traffic Report': 3, 'Recipe': 4}
 dict_reqs_nums = {
@@ -13,7 +13,7 @@ dict_reqs_nums = {
     'Laundry': 6,
     'R1 wake': 7,
     'R2 wake': 8,
-    'R2 take medicine':9 ,
+    'R2 take medicine': 9,
     'R1 work in office': 10,
     'Night wandering': 11,
     'Bed to toilet': 12,

@@ -1,5 +1,4 @@
 import tensorflow as tf
-import matplotlib.pyplot as plt
 import numpy as np
 
 from datasets import Dataset
@@ -55,23 +54,14 @@ def build_model(output_size, rnn_units):
     rnn = tf.keras.layers.LSTM
     model = tf.keras.Sequential([
 
-        rnn(rnn_units,
+        rnn(rnn_units, dropout=0.2, recurrent_dropout=0.2, activation='relu',
             return_sequences=True,
             unroll=True,
             recurrent_initializer='orthogonal',
             stateful=False),
 
-        rnn(rnn_units,
-            return_sequences=True,
-            unroll=True,
-            recurrent_initializer='orthogonal',
-            stateful=False),
-
-        tf.keras.layers.Dense(20, activation=None),
-        tf.keras.layers.BatchNormalization(),
-        tf.keras.layers.ReLU(),
-
-        tf.keras.layers.Dense(output_size, activation='sigmoid'),
+        tf.keras.layers.Dense(10, activation='relu'),
+        tf.keras.layers.Dense(output_size, activation='softmax'),
     ])
     return model
 
