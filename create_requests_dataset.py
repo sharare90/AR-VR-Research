@@ -25,6 +25,7 @@ def action_to_request_house1(action):
 
 
 def action_to_request_house2(action):
+    return action
     request = ""
     if action == "R1 wake" or action == "R2 wake":
         request = "Summary of News"
@@ -49,7 +50,7 @@ def action_to_request_house2(action):
 
 
 with open("./dataset/" + house + "_acts_reqs_" + phase + ".csv", "w") as house_act_req_tr:
-    with open("./dataset/" + house + "/generated_data_" + phase + ".csv") as house1_gen_data:
+    with open("./dataset/" + house + "/time_task_" + phase + ".csv") as house1_gen_data:
         data1 = csv.reader(house1_gen_data, delimiter=',')
         for line in data1:
             time = line[0]
@@ -57,7 +58,7 @@ with open("./dataset/" + house + "_acts_reqs_" + phase + ".csv", "w") as house_a
             request = action_to_request_house1(action)
             if request != "":
                 house_act_req_tr.write("house1," + time + "," + action + "," + request + "\n")
-    with open("./dataset/house2/generated_data_" + phase + ".csv") as house2_gen_data:
+    with open("./dataset/house2/time_task_" + phase + ".csv") as house2_gen_data:
         data2 = csv.reader(house2_gen_data, delimiter=',')
         for line in data2:
             time = line[0]

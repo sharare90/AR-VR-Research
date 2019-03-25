@@ -1,5 +1,6 @@
 import tensorflow as tf
 import numpy as np
+# from LSTM import BATCH_SIZE, TIMESTEP, INPUT_SIZE
 
 
 # BATCH_SIZE, TIMESTEP, INPUT_SIZE

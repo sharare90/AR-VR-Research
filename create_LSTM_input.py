@@ -30,4 +30,6 @@ with open("./dataset/" + file_name + "/LSTM_input_" + phase + "_req.txt", "w") a
         all_days.append(each_day_info)
         numpy_array = np.concatenate(all_days, axis=0)
         np.save("./dataset/" + file_name + "/LSTM_input_" + phase + "_req", numpy_array)
+        for i in numpy_array:
+            processed_data.write(str(i) + "\n")
 
