@@ -2,16 +2,16 @@ import tensorflow as tf
 import numpy as np
 
 from datasets import Dataset
-from setting import house
+from setting import house, phase
 
 INPUT_SIZE = 13
 OUTPUT_SIZE = 13
 TIMESTEP = 24
-BATCH_SIZE = 20
+BATCH_SIZE = 7
 THRESHOLD = 0.5
 
 
-def perform_testing(verbose=False):
+def perform_testing(verbose=False, write=False):
     print('Testing:')
     print('======================================')
     TEST_DAYS_NUM = 10
@@ -19,26 +19,28 @@ def perform_testing(verbose=False):
     mean_precision = 0
     mean_recall = 0
     mean_f1_score = 0
+    with open('./dataset/' + house + '/predicted_' + phase + '.csv', 'w') as predicted:
+        for i in range(TEST_DAYS_NUM):
+            # read day i
+            if verbose:
+                print('DAY {} =================================================='.format(i))
+            day_i_x, day_i_y = test_dataset.next_batch()
+            day_i_output = model.predict(day_i_x)
+            day_i_output[day_i_output < THRESHOLD] = 0
+            day_i_output[day_i_output >= THRESHOLD] = 1
+            # if write:
+            #     predicted.write(day_i_output[0] + '\n')
 
-    for i in range(TEST_DAYS_NUM):
-        # read day i
-        if verbose:
-            print('DAY {} =================================================='.format(i))
-        day_i_x, day_i_y = test_dataset.next_batch()
-        day_i_output = model.predict(day_i_x)
-        day_i_output[day_i_output < THRESHOLD] = 0
-        day_i_output[day_i_output >= THRESHOLD] = 1
+            scores = model.evaluate(day_i_x, day_i_y, verbose=0)
+            mean_precision += scores[1]
+            mean_recall += scores[2]
+            mean_f1_score += scores[3]
+            if verbose:
+                print(scores)
+                # distance between day_i output and day_i_y
+                print(np.sum((day_i_output - day_i_y)))
 
-        scores = model.evaluate(day_i_x, day_i_y, verbose=0)
-        mean_precision += scores[1]
-        mean_recall += scores[2]
-        mean_f1_score += scores[3]
-        if verbose:
-            print(scores)
-            # distance between day_i output and day_i_y
-            print(np.sum((day_i_output - day_i_y) ** 2))
-
-            # day_i_output[0, ...], day_i_y[0, ...]
+                # day_i_output[0, ...], day_i_y[0, ...]
 
     mean_precision /= TEST_DAYS_NUM
     mean_recall /= TEST_DAYS_NUM
@@ -54,14 +56,24 @@ def build_model(output_size, rnn_units):
     rnn = tf.keras.layers.LSTM
     model = tf.keras.Sequential([
 
-        rnn(rnn_units, dropout=0.2, recurrent_dropout=0.2, activation='relu',
+        rnn(rnn_units, activation='relu',
             return_sequences=True,
             unroll=True,
             recurrent_initializer='orthogonal',
             stateful=False),
 
-        tf.keras.layers.Dense(10, activation='relu'),
-        tf.keras.layers.Dense(output_size, activation='softmax'),
+        rnn(rnn_units, activation='relu',
+            return_sequences=True,
+            unroll=True,
+            recurrent_initializer='orthogonal',
+            stateful=False),
+
+
+        tf.keras.layers.Dense(200, activation='relu'),
+        tf.keras.layers.Dropout(0.5),
+        tf.keras.layers.Dense(200, activation='relu'),
+        tf.keras.layers.Dropout(0.5),
+        tf.keras.layers.Dense(output_size, activation='sigmoid'),
     ])
     return model
 
@@ -108,7 +120,7 @@ def f1_score_threshold(threshold=0.5):
     return f1_score
 
 
-model = build_model(OUTPUT_SIZE, 20)
+model = build_model(OUTPUT_SIZE, 100)
 model.compile(
     optimizer='adam',
     loss='binary_crossentropy',
@@ -128,7 +140,7 @@ with tf.Session() as sess:
     tf.global_variables_initializer().run()
     tf.local_variables_initializer().run()
 
-    for i in range(10000):
+    for i in range(20000):
         x, y = train_dataset.next_batch()
         verbose = i % 1000 == 0
         if verbose:
@@ -141,4 +153,4 @@ with tf.Session() as sess:
 
     # plt.plot(train_losses)
     # plt.show()
-    perform_testing(verbose=True)
+    perform_testing(verbose=True, write=True)

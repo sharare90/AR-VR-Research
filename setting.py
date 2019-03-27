@@ -1,6 +1,6 @@
 len_intervals = 1
 house = "house2"
-phase = "train"
+phase = "test"
 num_valid_requests = 13  # weather, traffic, news, parking, recipe
 # dict_reqs_nums = {'Summary of News': 0, 'Weather Report': 1, 'Parking status': 2, 'Traffic Report': 3, 'Recipe': 4}
 dict_reqs_nums = {
@@ -19,3 +19,7 @@ dict_reqs_nums = {
     'Bed to toilet': 12,
 }
 num_actions = 13  # for dataset1 = 8, and for dataset2 = 13
+
+cashing_cost_each_hour = 1
+respond_reward = 2
+number_of_cashing_trial = 1000
