@@ -153,4 +153,5 @@ with tf.Session() as sess:
 
     # plt.plot(train_losses)
     # plt.show()
+    model.save('./saved_models/LSTM_model')
     perform_testing(verbose=True, write=True)

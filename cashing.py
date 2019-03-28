@@ -1,9 +1,9 @@
-from setting import house, phase, cashing_cost_each_hour, respond_reward, num_valid_requests, dict_reqs_nums, \
+from setting import house, phase, caching_cost_each_hour, respond_reward, num_valid_requests, dict_reqs_nums, \
     number_of_cashing_trial
 import numpy as np
 
 
-class Cashing(object):
+class Caching(object):
     def __init__(self):
         self.data_file = "./dataset/" + house + "/LSTM_input_" + phase + "_req.npy"
         self.data = np.load(self.data_file)
@@ -11,7 +11,7 @@ class Cashing(object):
     def random_cashing(self):
         average_cost = 0
 
-        for i in range(number_of_cashing_trial):
+        for i in range(number_of_caching_trial):
             cost = 0
             for i in self.data:
                 for j in range(num_valid_requests):
@@ -19,27 +19,29 @@ class Cashing(object):
                     if i[j] == random_action_num:
                         cost -= respond_reward
                     else:
-                        cost += cashing_cost_each_hour
+                        cost += caching_cost_each_hour
             average_cost += cost
-        average_cost /= number_of_cashing_trial
+        average_cost /= number_of_caching_trial
         return average_cost
 
-    def cash_everything(self):
+    def cach_everything(self):
         cost = 0
         for i in self.data:
             for j in range(num_valid_requests):
                 if i[j] == 1:
                     cost -= respond_reward
                 else:
-                    cost += cashing_cost_each_hour
+                    cost += caching_cost_each_hour
         return cost
 
-    def average_based_cashing(self):
+    def average_based_caching(self):
         pass
 
+    def LSTM_based_caching(self):
 
-cash = Cashing()
-random_cost = cash.random_cashing()
-cash_all_cost = cash.cash_everything()
+
+cache = Caching()
+random_cost = cache.random_caching()
+cach_all_cost = cache.cach_everything()
 print(random_cost)
-print(cash_all_cost)
+print(cach_all_cost)

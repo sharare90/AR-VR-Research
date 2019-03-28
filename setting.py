@@ -20,6 +20,6 @@ dict_reqs_nums = {
 }
 num_actions = 13  # for dataset1 = 8, and for dataset2 = 13
 
-cashing_cost_each_hour = 1
+caching_cost_each_hour = 1
 respond_reward = 2
-number_of_cashing_trial = 1000
+number_of_caching_trial = 1000
