@@ -33,6 +33,7 @@ with open("./dataset/" + file_name + "/processed_data_" + phase + ".txt", "w") a
                 list_of_daily_tasks.append(today_list)
                 today_list = [0 for i in range(0, int(24 / len_intervals))]
 
+
             today_list[i] += 1
             previous_date = date
 

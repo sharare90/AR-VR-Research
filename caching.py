@@ -1,5 +1,5 @@
 from setting import house, phase, caching_cost_each_hour, respond_reward, num_valid_requests, dict_reqs_nums, \
-    number_of_cashing_trial
+    number_of_caching_trial
 import numpy as np
 
 
@@ -8,7 +8,7 @@ class Caching(object):
         self.data_file = "./dataset/" + house + "/LSTM_input_" + phase + "_req.npy"
         self.data = np.load(self.data_file)
 
-    def random_cashing(self):
+    def random_caching(self):
         average_cost = 0
 
         for i in range(number_of_caching_trial):
@@ -38,7 +38,7 @@ class Caching(object):
         pass
 
     def LSTM_based_caching(self):
-
+        pass
 
 cache = Caching()
 random_cost = cache.random_caching()

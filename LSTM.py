@@ -28,8 +28,6 @@ def perform_testing(verbose=False, write=False):
             day_i_output = model.predict(day_i_x)
             day_i_output[day_i_output < THRESHOLD] = 0
             day_i_output[day_i_output >= THRESHOLD] = 1
-            # if write:
-            #     predicted.write(day_i_output[0] + '\n')
 
             scores = model.evaluate(day_i_x, day_i_y, verbose=0)
             mean_precision += scores[1]
