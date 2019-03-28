@@ -7,11 +7,13 @@ list_of_tasks_frequency = [{} for i in list_of_intervals]
 list_of_daily_tasks = list()
 today_list = [0 for i in range(0, int(24 / len_intervals))]
 interval_task = []
-previous_date = "2009-06-10"
+
 with open("./dataset/" + file_name + "/processed_data_" + phase + ".txt", "w") as processed_data:
     with open("./dataset/" + phase + "_" + file_name + ".csv") as input_file:
         input_data = csv.reader(input_file, delimiter=",")
-
+        previous_date = next(input_data)[0]
+    with open("./dataset/" + phase + "_" + file_name + ".csv") as input_file:
+        input_data = csv.reader(input_file, delimiter=",")
         for line in input_data:
             date = line[0]
             time = int(line[1].split(":")[0])
