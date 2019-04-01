@@ -2,16 +2,54 @@ import tensorflow as tf
 import numpy as np
 
 from datasets import Dataset
-from setting import house, phase
+from setting import house, phase, num_valid_requests
 
-INPUT_SIZE = 13
-OUTPUT_SIZE = 13
+INPUT_SIZE = num_valid_requests
+OUTPUT_SIZE = num_valid_requests
 TIMESTEP = 24
 BATCH_SIZE = 7
-THRESHOLD = 0.5
+THRESHOLD = 0.2
 
 
-def perform_testing(verbose=False, write=False):
+def run():
+    model = build_model(OUTPUT_SIZE, 256)
+    model.compile(
+        optimizer='adam',
+        loss='binary_crossentropy',
+        # metrics=['binary_accuracy', precision_threshold(0.3), km.binary_precision(), km.binary_recall(), km.binary_f1_score()]
+        metrics=[precision_threshold(THRESHOLD), recall_threshold(THRESHOLD), f1_score_threshold(THRESHOLD)]
+    )
+
+    inp = tf.placeholder(dtype=tf.float32, shape=(None, TIMESTEP, INPUT_SIZE))
+    output = model(inp)
+
+    train_dataset = Dataset("./dataset/" + house + "/LSTM_input_train_req.npy", batch_size=BATCH_SIZE)
+    test_dataset = Dataset("./dataset/" + house + "/LSTM_input_test_req.npy", batch_size=1, should_shuffle=False)
+
+    train_losses = []
+
+    with tf.Session() as sess:
+        tf.global_variables_initializer().run()
+        tf.local_variables_initializer().run()
+
+        for i in range(20000):
+            x, y = train_dataset.next_batch()
+            verbose = i % 1000 == 0
+            if verbose:
+                print('iteration {}'.format(i))
+            history = model.fit(x, y, batch_size=BATCH_SIZE, verbose=verbose)
+            if verbose:
+                perform_testing(model, test_dataset)
+
+            train_losses.append(history.history['loss'][0])
+
+        # plt.plot(train_losses)
+        # plt.show()
+        model.save_weights('./saved_models/LSTM_model')
+        perform_testing(model, test_dataset, verbose=True, write=True)
+
+
+def perform_testing(model, test_dataset, verbose=False, write=False):
     print('Testing:')
     print('======================================')
     TEST_DAYS_NUM = 10
@@ -28,6 +66,7 @@ def perform_testing(verbose=False, write=False):
             day_i_output = model.predict(day_i_x)
             day_i_output[day_i_output < THRESHOLD] = 0
             day_i_output[day_i_output >= THRESHOLD] = 1
+            # print(day_i_output)
 
             scores = model.evaluate(day_i_x, day_i_y, verbose=0)
             mean_precision += scores[1]
@@ -54,23 +93,22 @@ def build_model(output_size, rnn_units):
     rnn = tf.keras.layers.LSTM
     model = tf.keras.Sequential([
 
-        rnn(rnn_units, activation='relu',
+        rnn(256, activation='relu',
             return_sequences=True,
             unroll=True,
             recurrent_initializer='orthogonal',
             stateful=False),
 
-        rnn(rnn_units, activation='relu',
+        rnn(256, activation='relu',
             return_sequences=True,
             unroll=True,
             recurrent_initializer='orthogonal',
             stateful=False),
 
-
-        tf.keras.layers.Dense(200, activation='relu'),
-        tf.keras.layers.Dropout(0.5),
-        tf.keras.layers.Dense(200, activation='relu'),
-        tf.keras.layers.Dropout(0.5),
+        tf.keras.layers.Dense(512, activation='relu'),
+        tf.keras.layers.Dropout(rate=0.5),
+        tf.keras.layers.Dense(512, activation='relu'),
+        tf.keras.layers.Dropout(rate=0.5),
         tf.keras.layers.Dense(output_size, activation='sigmoid'),
     ])
     return model
@@ -118,38 +156,20 @@ def f1_score_threshold(threshold=0.5):
     return f1_score
 
 
-model = build_model(OUTPUT_SIZE, 100)
-model.compile(
-    optimizer='adam',
-    loss='binary_crossentropy',
-    # metrics=['binary_accuracy', precision_threshold(0.3), km.binary_precision(), km.binary_recall(), km.binary_f1_score()]
-    metrics=[precision_threshold(THRESHOLD), recall_threshold(THRESHOLD), f1_score_threshold(THRESHOLD)]
-)
+#
+if __name__ == '__main__':
+    #     test_dataset = Dataset("./dataset/" + house + "/LSTM_input_test_req.npy", batch_size=1, should_shuffle=False)
+    #     model = build_model(OUTPUT_SIZE, 256)
+    #     model.compile(
+    #         optimizer='adam',
+    #         loss='categorical_crossentropy',
+    #         # metrics=['binary_accuracy', precision_threshold(0.3), km.binary_precision(), km.binary_recall(), km.binary_f1_score()]
+    #         metrics=[precision_threshold(THRESHOLD), recall_threshold(THRESHOLD), f1_score_threshold(THRESHOLD)]
+    #     )
+    #     with tf.Session() as sess:
+    #         tf.global_variables_initializer().run()
+    #         tf.local_variables_initializer().run()
+    #         model.load_weights('./saved_models/LSTM_model')
+    #         perform_testing(model, test_dataset, verbose=True)
 
-inp = tf.placeholder(dtype=tf.float32, shape=(None, TIMESTEP, INPUT_SIZE))
-output = model(inp)
-
-train_dataset = Dataset("./dataset/" + house + "/LSTM_input_train_req.npy", batch_size=BATCH_SIZE)
-test_dataset = Dataset("./dataset/" + house + "/LSTM_input_test_req.npy", batch_size=1, should_shuffle=False)
-
-train_losses = []
-
-with tf.Session() as sess:
-    tf.global_variables_initializer().run()
-    tf.local_variables_initializer().run()
-
-    for i in range(20000):
-        x, y = train_dataset.next_batch()
-        verbose = i % 1000 == 0
-        if verbose:
-            print('iteration {}'.format(i))
-        history = model.fit(x, y, batch_size=BATCH_SIZE, verbose=verbose)
-        if verbose:
-            perform_testing()
-
-        train_losses.append(history.history['loss'][0])
-
-    # plt.plot(train_losses)
-    # plt.show()
-    model.save('./saved_models/LSTM_model')
-    perform_testing(verbose=True, write=True)
+    run()

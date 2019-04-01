@@ -7,7 +7,10 @@ with open("./dataset/validation_" + house + ".csv", "w") as validation_h1:
         data1 = csv.reader(h1, delimiter=",")
         dates = {}
         one_day_data = list()
-        current_date = "2009-06-10"
+        if house == 'house1':
+            current_date = "25-Feb-2008"
+        else:
+            current_date = "2009-06-10"
         for line in data1:
             date = line[0]
             if date != current_date:
