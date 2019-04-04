@@ -1,5 +1,7 @@
 import tensorflow as tf
 import numpy as np
+import tensorboard
+import matplotlib.pyplot as plt
 
 from datasets import Dataset
 from setting import house, phase, num_valid_requests
@@ -7,12 +9,12 @@ from setting import house, phase, num_valid_requests
 INPUT_SIZE = num_valid_requests
 OUTPUT_SIZE = num_valid_requests
 TIMESTEP = 24
-BATCH_SIZE = 7
-THRESHOLD = 0.2
+BATCH_SIZE = 10
+THRESHOLD = 0.5
 
 
 def run():
-    model = build_model(OUTPUT_SIZE, 256)
+    model = build_model(OUTPUT_SIZE, 64)
     model.compile(
         optimizer='adam',
         loss='binary_crossentropy',
@@ -24,6 +26,7 @@ def run():
     output = model(inp)
 
     train_dataset = Dataset("./dataset/" + house + "/LSTM_input_train_req.npy", batch_size=BATCH_SIZE)
+    validation_dataset = Dataset("./dataset/" + house + "/LSTM_input_validation_req.npy", batch_size=6, should_shuffle=False)
     test_dataset = Dataset("./dataset/" + house + "/LSTM_input_test_req.npy", batch_size=1, should_shuffle=False)
 
     train_losses = []
@@ -32,16 +35,32 @@ def run():
         tf.global_variables_initializer().run()
         tf.local_variables_initializer().run()
 
-        for i in range(20000):
-            x, y = train_dataset.next_batch()
-            verbose = i % 1000 == 0
-            if verbose:
-                print('iteration {}'.format(i))
-            history = model.fit(x, y, batch_size=BATCH_SIZE, verbose=verbose)
-            if verbose:
-                perform_testing(model, test_dataset)
+        history = model.fit(
+            train_dataset.iterator,
+            steps_per_epoch=32,
+            epochs=3,
+            verbose=True,
+            validation_data=validation_dataset.iterator,
+            validation_steps=1
+        )
 
-            train_losses.append(history.history['loss'][0])
+        plt.plot(history.history['loss'])
+        plt.plot(history.history['val_loss'])
+        plt.show()
+
+        # for i in range(20000):
+        #     x, y = train_dataset.next_batch()
+        #     verbose = i % 1000 == 0
+        #     if verbose:
+        #         print('iteration {}'.format(i))
+        #
+        #     history = model.fit(x, y, batch_size=BATCH_SIZE, verbose=verbose, epochs=1,
+        #                         validation_split=0.2)
+        #     if verbose:
+        #         perform_testing(model, test_dataset)
+        #         plt.plot(history.history['loss'])
+        #
+        #     train_losses.append(history.history['loss'][0])
 
         # plt.plot(train_losses)
         # plt.show()
@@ -93,21 +112,21 @@ def build_model(output_size, rnn_units):
     rnn = tf.keras.layers.LSTM
     model = tf.keras.Sequential([
 
-        rnn(256, activation='relu',
+        rnn(64, activation='relu',
             return_sequences=True,
             unroll=True,
             recurrent_initializer='orthogonal',
             stateful=False),
 
-        rnn(256, activation='relu',
+        rnn(64, activation='relu',
             return_sequences=True,
             unroll=True,
             recurrent_initializer='orthogonal',
             stateful=False),
 
-        tf.keras.layers.Dense(512, activation='relu'),
+        tf.keras.layers.Dense(128, activation='relu'),
         tf.keras.layers.Dropout(rate=0.5),
-        tf.keras.layers.Dense(512, activation='relu'),
+        tf.keras.layers.Dense(128, activation='relu'),
         tf.keras.layers.Dropout(rate=0.5),
         tf.keras.layers.Dense(output_size, activation='sigmoid'),
     ])

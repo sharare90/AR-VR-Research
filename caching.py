@@ -9,6 +9,7 @@ class Caching(object):
     def __init__(self):
         self.data_file = "./dataset/" + house + "/LSTM_input_" + 'test' + "_req.npy"
         self.data = np.load(self.data_file)
+        print(np.sum(self.data))
 
     def random_caching(self):
         average_cost = 0
@@ -93,7 +94,7 @@ class Caching(object):
                 prediction_current_day[prediction_current_day >= threshold] = 1
                 prediction_current_day = prediction_current_day[0].astype(np.int32)
                 # prediction_current_day = current_day_data.reshape((24, 13))[:, :].astype(np.int32)
-                for i in range(24):
+                for i in range(2, 24):
                     for j in range(num_valid_requests):
                         if prediction_current_day[i, j] == 1:
                             cost += caching_cost_each_hour
