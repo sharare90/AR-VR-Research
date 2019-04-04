@@ -73,13 +73,13 @@ class Caching(object):
 
     def LSTM_based_caching(self, threshold=0.5):
         from LSTM import build_model, OUTPUT_SIZE
-        model = build_model(OUTPUT_SIZE, 100)
+        model = build_model(OUTPUT_SIZE, 64)
         cost = 0
 
         with tf.Session() as sess:
             tf.global_variables_initializer().run()
             tf.local_variables_initializer().run()
-            model.load_weights('./saved_models/LSTM_model')
+            model.load_weights('./saved_models_d1/LSTM_model')
 
             current_day = 0
             while True:
@@ -94,7 +94,7 @@ class Caching(object):
                 prediction_current_day[prediction_current_day >= threshold] = 1
                 prediction_current_day = prediction_current_day[0].astype(np.int32)
                 # prediction_current_day = current_day_data.reshape((24, 13))[:, :].astype(np.int32)
-                for i in range(2, 24):
+                for i in range(0, 24):
                     for j in range(num_valid_requests):
                         if prediction_current_day[i, j] == 1:
                             cost += caching_cost_each_hour

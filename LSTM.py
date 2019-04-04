@@ -4,13 +4,14 @@ import tensorboard
 import matplotlib.pyplot as plt
 
 from datasets import Dataset
-from setting import house, phase, num_valid_requests
+from setting import house, phase, num_valid_requests, num_train_days
 
 INPUT_SIZE = num_valid_requests
 OUTPUT_SIZE = num_valid_requests
 TIMESTEP = 24
-BATCH_SIZE = 10
+BATCH_SIZE = 6
 THRESHOLD = 0.5
+NUM_EPOCHS = 400
 
 
 def run():
@@ -26,7 +27,8 @@ def run():
     output = model(inp)
 
     train_dataset = Dataset("./dataset/" + house + "/LSTM_input_train_req.npy", batch_size=BATCH_SIZE)
-    validation_dataset = Dataset("./dataset/" + house + "/LSTM_input_validation_req.npy", batch_size=6, should_shuffle=False)
+    validation_dataset = Dataset("./dataset/" + house + "/LSTM_input_validation_req.npy", batch_size=5,
+                                 should_shuffle=False)
     test_dataset = Dataset("./dataset/" + house + "/LSTM_input_test_req.npy", batch_size=1, should_shuffle=False)
 
     train_losses = []
@@ -37,13 +39,14 @@ def run():
 
         history = model.fit(
             train_dataset.iterator,
-            steps_per_epoch=32,
-            epochs=3,
+            steps_per_epoch=int(num_train_days / BATCH_SIZE),
+            epochs=NUM_EPOCHS,
             verbose=True,
             validation_data=validation_dataset.iterator,
             validation_steps=1
         )
-
+        np.savetxt('./saved_models_d1/train_loss.txt', history.history['loss'])
+        np.savetxt('./saved_models_d1/val_loss.txt', history.history['val_loss'])
         plt.plot(history.history['loss'])
         plt.plot(history.history['val_loss'])
         plt.show()
@@ -64,8 +67,10 @@ def run():
 
         # plt.plot(train_losses)
         # plt.show()
-        model.save_weights('./saved_models/LSTM_model')
-        perform_testing(model, test_dataset, verbose=True, write=True)
+        model.save_weights('./saved_models_d1/LSTM_model')
+        perform_testing(model, test_dataset.iterator, verbose=True, write=True)
+
+
 
 
 def perform_testing(model, test_dataset, verbose=False, write=False):
@@ -73,39 +78,41 @@ def perform_testing(model, test_dataset, verbose=False, write=False):
     print('======================================')
     TEST_DAYS_NUM = 10
 
-    mean_precision = 0
-    mean_recall = 0
-    mean_f1_score = 0
-    with open('./dataset/' + house + '/predicted_' + phase + '.csv', 'w') as predicted:
-        for i in range(TEST_DAYS_NUM):
-            # read day i
-            if verbose:
-                print('DAY {} =================================================='.format(i))
-            day_i_x, day_i_y = test_dataset.next_batch()
-            day_i_output = model.predict(day_i_x)
-            day_i_output[day_i_output < THRESHOLD] = 0
-            day_i_output[day_i_output >= THRESHOLD] = 1
-            # print(day_i_output)
+    # mean_precision = 0
+    # mean_recall = 0
+    # mean_f1_score = 0
 
-            scores = model.evaluate(day_i_x, day_i_y, verbose=0)
-            mean_precision += scores[1]
-            mean_recall += scores[2]
-            mean_f1_score += scores[3]
-            if verbose:
-                print(scores)
-                # distance between day_i output and day_i_y
-                print(np.sum((day_i_output - day_i_y)))
+    model.evaluate(test_dataset, verbose=True, steps=5)
+    # with open('./dataset/' + house + '/predicted_' + phase + '.csv', 'w') as predicted:
+    #     for i in range(TEST_DAYS_NUM):
+    #         # read day i
+    #         if verbose:
+    #             print('DAY {} =================================================='.format(i))
+    #         day_i_x, day_i_y = test_dataset.
+    #         day_i_output = model.predict(day_i_x)
+    #         day_i_output[day_i_output < THRESHOLD] = 0
+    #         day_i_output[day_i_output >= THRESHOLD] = 1
+    #         # print(day_i_output)
+    #
+    #         scores = model.evaluate(day_i_x, day_i_y, verbose=0)
+    #         mean_precision += scores[1]
+    #         mean_recall += scores[2]
+    #         mean_f1_score += scores[3]
+    #         if verbose:
+    #             print(scores)
+    #             # distance between day_i output and day_i_y
+    #             print(np.sum((day_i_output - day_i_y)))
+    #
+    #             # day_i_output[0, ...], day_i_y[0, ...]
 
-                # day_i_output[0, ...], day_i_y[0, ...]
+    # mean_precision /= TEST_DAYS_NUM
+    # mean_recall /= TEST_DAYS_NUM
+    # mean_f1_score /= TEST_DAYS_NUM
 
-    mean_precision /= TEST_DAYS_NUM
-    mean_recall /= TEST_DAYS_NUM
-    mean_f1_score /= TEST_DAYS_NUM
-
-    if verbose:
-        print('mean precision: {}'.format(mean_precision))
-        print('mean recall: {}'.format(mean_recall))
-    print('mean f1 score: {}'.format(mean_f1_score))
+    # if verbose:
+    #     print('mean precision: {}'.format(mean_precision))
+    #     print('mean recall: {}'.format(mean_recall))
+    # print('mean f1 score: {}'.format(mean_f1_score))
 
 
 def build_model(output_size, rnn_units):
@@ -177,18 +184,18 @@ def f1_score_threshold(threshold=0.5):
 
 #
 if __name__ == '__main__':
-    #     test_dataset = Dataset("./dataset/" + house + "/LSTM_input_test_req.npy", batch_size=1, should_shuffle=False)
-    #     model = build_model(OUTPUT_SIZE, 256)
-    #     model.compile(
-    #         optimizer='adam',
-    #         loss='categorical_crossentropy',
-    #         # metrics=['binary_accuracy', precision_threshold(0.3), km.binary_precision(), km.binary_recall(), km.binary_f1_score()]
-    #         metrics=[precision_threshold(THRESHOLD), recall_threshold(THRESHOLD), f1_score_threshold(THRESHOLD)]
-    #     )
-    #     with tf.Session() as sess:
-    #         tf.global_variables_initializer().run()
-    #         tf.local_variables_initializer().run()
-    #         model.load_weights('./saved_models/LSTM_model')
-    #         perform_testing(model, test_dataset, verbose=True)
+    # test_dataset = Dataset("./dataset/" + house + "/LSTM_input_test_req.npy", batch_size=1, should_shuffle=False)
+    # model = build_model(OUTPUT_SIZE, 256)
+    # model.compile(
+    #     optimizer='adam',
+    #     loss='categorical_crossentropy',
+    #     # metrics=['binary_accuracy', precision_threshold(0.3), km.binary_precision(), km.binary_recall(), km.binary_f1_score()]
+    #     metrics=[precision_threshold(THRESHOLD), recall_threshold(THRESHOLD), f1_score_threshold(THRESHOLD)]
+    # )
+    # with tf.Session() as sess:
+    #     tf.global_variables_initializer().run()
+    #     tf.local_variables_initializer().run()
+    #     model.load_weights('./saved_models_d1/LSTM_model')
+    #     perform_testing(model, test_dataset.iterator, verbose=True)
 
     run()
