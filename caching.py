@@ -79,7 +79,8 @@ class Caching(object):
         with tf.Session() as sess:
             tf.global_variables_initializer().run()
             tf.local_variables_initializer().run()
-            model.load_weights('./saved_models_d1/LSTM_model')
+            # model.load_weights('./saved_models_d1/LSTM_model')
+            model.load_weights('./saved_models_d1/best_model')
 
             current_day = 0
             while True:
@@ -94,7 +95,7 @@ class Caching(object):
                 prediction_current_day[prediction_current_day >= threshold] = 1
                 prediction_current_day = prediction_current_day[0].astype(np.int32)
                 # prediction_current_day = current_day_data.reshape((24, 13))[:, :].astype(np.int32)
-                for i in range(0, 24):
+                for i in range(2, 24):
                     for j in range(num_valid_requests):
                         if prediction_current_day[i, j] == 1:
                             cost += caching_cost_each_hour
@@ -106,7 +107,7 @@ class Caching(object):
 cache = Caching()
 random_cost = cache.random_caching()
 cache_everything_cost = cache.cache_everything()
-cache_LSTM_based = cache.LSTM_based_caching()
+cache_LSTM_based = cache.LSTM_based_caching(0.9)
 cache_average_based = cache.average_based_caching(15)
 print(random_cost)
 print(cache_everything_cost)

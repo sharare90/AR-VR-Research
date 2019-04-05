@@ -13,7 +13,7 @@ class Dataset(object):
     def __init__(self, dataset_address, batch_size, should_shuffle=True):
         def get_x_y(example):
             example = tf.cast(example, tf.float32)
-            return tf.concat((tf.zeros(shape=(1, num_actions)), example[1:, :]), axis=0), example
+            return tf.concat((tf.zeros(shape=(1, num_actions)), example[:23, :]), axis=0), example
 
         self.address = dataset_address
         self.data = np.load(self.address)
