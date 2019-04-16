@@ -5,14 +5,15 @@ import matplotlib.pyplot as plt
 from tensorflow.python.keras.callbacks import EarlyStopping, ModelCheckpoint
 
 from datasets import Dataset
-from setting import house, phase, num_valid_requests, num_train_days
+from setting import house, phase, num_valid_requests, num_train_days, num_test_days, num_validation_days, \
+    saved_model_folder
 
 INPUT_SIZE = num_valid_requests
 OUTPUT_SIZE = num_valid_requests
 TIMESTEP = 24
 BATCH_SIZE = 6
 THRESHOLD = 0.5
-NUM_EPOCHS = 2000
+NUM_EPOCHS = 8000
 
 
 def run():
@@ -21,14 +22,16 @@ def run():
         optimizer='adam',
         loss='binary_crossentropy',
         # metrics=['binary_accuracy', precision_threshold(0.3), km.binary_precision(), km.binary_recall(), km.binary_f1_score()]
-        metrics=[precision_threshold(THRESHOLD), recall_threshold(THRESHOLD), f1_score_threshold(THRESHOLD)]
+        metrics=[tf.keras.metrics.binary_accuracy, precision_threshold(THRESHOLD), recall_threshold(THRESHOLD),
+                 f1_score_threshold(THRESHOLD)]
     )
 
     inp = tf.placeholder(dtype=tf.float32, shape=(None, TIMESTEP, INPUT_SIZE))
     output = model(inp)
 
     train_dataset = Dataset("./dataset/" + house + "/LSTM_input_train_req.npy", batch_size=BATCH_SIZE)
-    validation_dataset = Dataset("./dataset/" + house + "/LSTM_input_validation_req.npy", batch_size=5,
+    validation_dataset = Dataset("./dataset/" + house + "/LSTM_input_validation_req.npy",
+                                 batch_size=num_validation_days,
                                  should_shuffle=False)
     test_dataset = Dataset("./dataset/" + house + "/LSTM_input_test_req.npy", batch_size=1, should_shuffle=False)
 
@@ -41,7 +44,7 @@ def run():
         callbacks = [
             # EarlyStopping(monitor='val_f1_score', patience=50, mode='max', baseline=0.40),
             ModelCheckpoint(
-                filepath='./saved_models_d1/best_model',
+                filepath='./' + saved_model_folder + '/best_model',
                 monitor='val_f1_score',
                 save_best_only=True,
                 save_weights_only=True,
@@ -58,10 +61,10 @@ def run():
             validation_steps=1,
             callbacks=callbacks
         )
-        np.savetxt('./saved_models_d1/train_loss.txt', history.history['loss'])
-        np.savetxt('./saved_models_d1/val_loss.txt', history.history['val_loss'])
-        np.savetxt('./saved_models_d1/train_f1score.txt', history.history['f1_score'])
-        np.savetxt('./saved_models_d1/val_f1score.txt', history.history['val_f1_score'])
+        np.savetxt('./' + saved_model_folder + '/train_loss.txt', history.history['loss'])
+        np.savetxt('./' + saved_model_folder + '/val_loss.txt', history.history['val_loss'])
+        np.savetxt('./' + saved_model_folder + '/train_f1score.txt', history.history['f1_score'])
+        np.savetxt('./' + saved_model_folder + '/val_f1score.txt', history.history['val_f1_score'])
         plt.plot(history.history['f1_score'])
         plt.plot(history.history['val_f1_score'])
         plt.show()
@@ -82,7 +85,7 @@ def run():
 
         # plt.plot(train_losses)
         # plt.show()
-        model.save_weights('./saved_models_d1/LSTM_model')
+        model.save_weights('./' + saved_model_folder + '/LSTM_model')
         perform_testing(model, test_dataset.iterator, verbose=True, write=True)
 
 
@@ -95,7 +98,7 @@ def perform_testing(model, test_dataset, verbose=False, write=False):
     # mean_recall = 0
     # mean_f1_score = 0
 
-    model.evaluate(test_dataset, verbose=True, steps=2)
+    model.evaluate(test_dataset, verbose=True, steps=num_test_days)
     # with open('./dataset/' + house + '/predicted_' + phase + '.csv', 'w') as predicted:
     #     for i in range(TEST_DAYS_NUM):
     #         # read day i
@@ -132,18 +135,23 @@ def build_model(output_size, rnn_units):
     rnn = tf.keras.layers.LSTM
     model = tf.keras.Sequential([
 
-        rnn(32, activation='relu',
+        rnn(64, activation='relu',
             return_sequences=True,
             unroll=True,
             recurrent_initializer='orthogonal',
             stateful=False),
-        #
-        tf.keras.layers.Dense(32, activation='relu'),
-        tf.keras.layers.BatchNormalization(),
-        # tf.keras.layers.Dropout(rate=0.5),
-        # tf.keras.layers.Dense(32, activation='relu', kernel_regularizer=tf.keras.regularizers.l2(0.01)),
-        # tf.keras.layers.Dropout(rate=0.5),
-        tf.keras.layers.Dense(output_size, activation='sigmoid'),
+
+        tf.keras.layers.Dense(128),
+        # tf.keras.layers.BatchNormalization(),
+        tf.keras.layers.Activation("relu"),
+        tf.keras.layers.Dropout(rate=0.5),
+        tf.keras.layers.Dense(128),
+        # tf.keras.layers.BatchNormalization(),
+        tf.keras.layers.Activation("relu"),
+        tf.keras.layers.Dropout(rate=0.5),
+        tf.keras.layers.Dense(output_size),
+        # tf.keras.layers.BatchNormalization(),
+        tf.keras.layers.Activation("sigmoid")
     ])
     return model
 
@@ -195,7 +203,7 @@ if __name__ == '__main__':
     #   test with loading
     # test_dataset = Dataset("./dataset/" + house + "/LSTM_input_test_req.npy", batch_size=1, should_shuffle=False)
     #
-    # model = build_model(OUTPUT_SIZE, 64)
+    # model = build_model(OUTPUT_SIZE, 32)
     # model.compile(
     #     optimizer='adam',
     #     loss='binary_crossentropy',
@@ -205,9 +213,9 @@ if __name__ == '__main__':
     #
     # with tf.Session() as sess:
     #     sess.run(tf.global_variables_initializer())
-    #     model.load_weights('./saved_models_d1/best_model')
+    #     model.load_weights('./' + saved_model_folder + '/best_model')
     #
-    #     for _ in range(2):
+    #     for _ in range(num_test_days):
     #         a, b = sess.run(test_dataset.next_item)
     #         print(a)
     #         print('prediction')

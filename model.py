@@ -27,7 +27,6 @@ class Server:
     def __init__(self):
         pass
 
-
 class IntervalData(object):
     def __init__(self, action_prob, mean, std):
         self.action_prob = action_prob

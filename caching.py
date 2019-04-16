@@ -1,5 +1,5 @@
 from setting import house, phase, caching_cost_each_hour, no_respond, num_valid_requests, dict_reqs_nums, \
-    number_of_caching_trial
+    number_of_caching_trial, saved_model_folder
 import numpy as np
 from keras.models import load_model
 import tensorflow as tf
@@ -9,6 +9,8 @@ class Caching(object):
     def __init__(self):
         self.data_file = "./dataset/" + house + "/LSTM_input_" + 'test' + "_req.npy"
         self.data = np.load(self.data_file)
+        self.caching_cost_each_hour = caching_cost_each_hour
+        self.no_respond = no_respond
         print(np.sum(self.data))
 
     def random_caching(self):
@@ -21,9 +23,9 @@ class Caching(object):
                 for j in range(num_valid_requests):
                     random_action_num = np.random.randint(0, 2)
                     if random_action_num == 1:
-                        cost += caching_cost_each_hour
+                        cost += self.caching_cost_each_hour
                     elif line[j] == 1 and random_action_num == 0:
-                        cost += no_respond
+                        cost += self.no_respond
             average_cost += cost
         average_cost /= number_of_caching_trial
         return average_cost
@@ -32,7 +34,7 @@ class Caching(object):
         cost = 0
         for line in self.data:
             for j in range(num_valid_requests):
-                cost += caching_cost_each_hour
+                cost += self.caching_cost_each_hour
         return cost
 
     def average_based_caching(self, threshold=0):
@@ -63,9 +65,9 @@ class Caching(object):
                 should_cache = cache_data[interval_count, j]
 
                 if should_cache == 1:
-                    cost += caching_cost_each_hour
+                    cost += self.caching_cost_each_hour
                 elif line[j] == 1 and should_cache == 0:
-                    cost += no_respond
+                    cost += self.no_respond
 
             interval_count += 1
             interval_count = interval_count % 24
@@ -73,14 +75,14 @@ class Caching(object):
 
     def LSTM_based_caching(self, threshold=0.5):
         from LSTM import build_model, OUTPUT_SIZE
-        model = build_model(OUTPUT_SIZE, 64)
+        model = build_model(OUTPUT_SIZE, 32)
         cost = 0
 
         with tf.Session() as sess:
             tf.global_variables_initializer().run()
             tf.local_variables_initializer().run()
-            # model.load_weights('./saved_models_d1/LSTM_model')
-            model.load_weights('./saved_models_d1/best_model')
+            model.load_weights('./' + saved_model_folder + '/LSTM_model')
+            # model.load_weights('./' + saved_model_folder + '/best_model')
 
             current_day = 0
             while True:
@@ -95,26 +97,35 @@ class Caching(object):
                 prediction_current_day[prediction_current_day >= threshold] = 1
                 prediction_current_day = prediction_current_day[0].astype(np.int32)
                 # prediction_current_day = current_day_data.reshape((24, 13))[:, :].astype(np.int32)
-                for i in range(2, 24):
+                for i in range(0, 24):
                     for j in range(num_valid_requests):
                         if prediction_current_day[i, j] == 1:
-                            cost += caching_cost_each_hour
+                            cost += self.caching_cost_each_hour
                         elif current_day_data[i, j] == 1 and prediction_current_day[i, j] == 0:
-                            cost += no_respond
+                            cost += self.no_respond
         return cost
 
 
 cache = Caching()
 random_cost = cache.random_caching()
 cache_everything_cost = cache.cache_everything()
-cache_LSTM_based = cache.LSTM_based_caching(0.9)
+cache_LSTM_based = cache.LSTM_based_caching(0.5)
 cache_average_based = cache.average_based_caching(15)
 print(random_cost)
 print(cache_everything_cost)
 print(cache_LSTM_based)
 print(cache_average_based)
 
-
+cache.caching_cost_each_hour = 0
+cache.no_respond = 0
+result = []
+for i in range(3):
+    for j in range(1):
+        result.append([cache.caching_cost_each_hour, cache.no_respond, cache.average_based_caching(15)])
+        cache.caching_cost_each_hour += 1
+    cache.no_respond += 1
+np.save("./saved_models_d1/caching_Average_costs.npy", result)
+np.savetxt("./saved_models_d1/caching_Average_costs.txt", result)
 
 # min_threshold = 0
 # min_value = 10000000

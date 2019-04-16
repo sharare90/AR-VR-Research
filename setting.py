@@ -1,9 +1,15 @@
-len_intervals = 1
+len_intervals = 1 # len_interval = 1 means that we have 24 intervals for a day. len_intervals = 2 means that we have 12 intervals.
 house = "house1"
 phase = "train"
-num_train_days = 17 # for house1 = 17, for house2=42
-num_valid_requests = 8  # weather, traffic, news, parking, recipe
-# num_valid_requests = 13
+saved_model_folder = 'saved_models_d1'
+num_train_days = 18 # for house1 = 18, for house2=46
+num_test_days = 2   # for house1 = 2, for house2 = 5
+num_validation_days = 2 # for house1 = 2, for house2 = 5
+num_valid_requests = 8  # for house 1
+# num_valid_requests = 13 #for house 2
+
+# for creating requests num_valid_requests is 5
+# weather, traffic, news, parking, recipe
 # dict_reqs_nums = {'Summary of News': 0, 'Weather Report': 1, 'Parking status': 2, 'Traffic Report': 3, 'Recipe': 4}
 dict_reqs_nums = {
     'Brush teeth': 0,
