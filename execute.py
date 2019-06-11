@@ -1,5 +1,5 @@
 from model import Environment, Server, User, Agent
-from setting import house, len_intervals, phase, num_actions, dict_reqs_nums
+from setting import house, len_intervals, phase, num_actions, dict_reqs_nums, num_valid_requests
 
 file_name = house
 

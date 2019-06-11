@@ -4,7 +4,7 @@ from setting import house, phase
 
 
 def action_to_request_house1(action):
-    return action
+    # return action
     request = ""
     if action == "Shave" or action == "Brush teeth" or action == "Get a drink":
         request = "Summary of News"
@@ -26,7 +26,7 @@ def action_to_request_house1(action):
 
 
 def action_to_request_house2(action):
-    return action
+    # return action
     request = ""
     if action == "R1 wake" or action == "R2 wake":
         request = "Summary of News"

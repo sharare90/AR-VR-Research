@@ -6,34 +6,34 @@ from tensorflow.python.keras.callbacks import EarlyStopping, ModelCheckpoint
 
 from datasets import Dataset
 from setting import house, phase, num_valid_requests, num_train_days, num_test_days, num_validation_days, \
-    saved_model_folder
+    saved_model_folder, len_intervals
 
 INPUT_SIZE = num_valid_requests
 OUTPUT_SIZE = num_valid_requests
-TIMESTEP = 24
+TIMESTEP = int(24 / len_intervals)
 BATCH_SIZE = 6
 THRESHOLD = 0.5
-NUM_EPOCHS = 8000
+NUM_EPOCHS = 225
+learning_rate = 0.001
 
 
 def run():
-    model = build_model(OUTPUT_SIZE, 64)
+    model = build_lstm_model(OUTPUT_SIZE, 64)
+    # model = build_fc_model(OUTPUT_SIZE)
     model.compile(
-        optimizer='adam',
+        optimizer=tf.train.AdamOptimizer(learning_rate=learning_rate),
         loss='binary_crossentropy',
         # metrics=['binary_accuracy', precision_threshold(0.3), km.binary_precision(), km.binary_recall(), km.binary_f1_score()]
         metrics=[tf.keras.metrics.binary_accuracy, precision_threshold(THRESHOLD), recall_threshold(THRESHOLD),
                  f1_score_threshold(THRESHOLD)]
     )
 
-    inp = tf.placeholder(dtype=tf.float32, shape=(None, TIMESTEP, INPUT_SIZE))
-    output = model(inp)
-
-    train_dataset = Dataset("./dataset/" + house + "/LSTM_input_train_req.npy", batch_size=BATCH_SIZE)
+    train_dataset = Dataset("./dataset/" + house + "/LSTM_input_train_req.npy", batch_size=BATCH_SIZE, num_days_take=12)
     validation_dataset = Dataset("./dataset/" + house + "/LSTM_input_validation_req.npy",
                                  batch_size=num_validation_days,
-                                 should_shuffle=False)
-    test_dataset = Dataset("./dataset/" + house + "/LSTM_input_test_req.npy", batch_size=1, should_shuffle=False)
+                                 should_shuffle=False, num_days_take=-1)
+    test_dataset = Dataset("./dataset/" + house + "/LSTM_input_test_req.npy", batch_size=1, should_shuffle=False,
+                           num_days_take=-1)
 
     train_losses = []
 
@@ -131,16 +131,27 @@ def perform_testing(model, test_dataset, verbose=False, write=False):
     # print('mean f1 score: {}'.format(mean_f1_score))
 
 
-def build_model(output_size, rnn_units):
+def build_fc_model(output_size):
+    model = tf.keras.Sequential([
+        tf.keras.layers.Dense(128, activation='relu'),
+        tf.keras.layers.Dense(128, activation='relu'),
+        tf.keras.layers.Dense(TIMESTEP * output_size, activation='sigmoid')
+    ])
+
+    return model
+
+
+def build_lstm_model(output_size, rnn_units):
     rnn = tf.keras.layers.LSTM
     model = tf.keras.Sequential([
 
         rnn(64, activation='relu',
             return_sequences=True,
             unroll=True,
-            recurrent_initializer='orthogonal',
+            use_bias=True,
+            activity_regularizer=tf.keras.regularizers.l1_l2(0.01),
+            recurrent_initializer='he_normal',
             stateful=False),
-
         tf.keras.layers.Dense(128),
         # tf.keras.layers.BatchNormalization(),
         tf.keras.layers.Activation("relu"),
@@ -200,30 +211,5 @@ def f1_score_threshold(threshold=0.5):
 
 #
 if __name__ == '__main__':
-    #   test with loading
-    # test_dataset = Dataset("./dataset/" + house + "/LSTM_input_test_req.npy", batch_size=1, should_shuffle=False)
-    #
-    # model = build_model(OUTPUT_SIZE, 32)
-    # model.compile(
-    #     optimizer='adam',
-    #     loss='binary_crossentropy',
-    #     metrics=[precision_threshold(THRESHOLD), recall_threshold(THRESHOLD), f1_score_threshold(THRESHOLD)]
-    # )
-    # model.predict(np.zeros([1, 24, 8]))
-    #
-    # with tf.Session() as sess:
-    #     sess.run(tf.global_variables_initializer())
-    #     model.load_weights('./' + saved_model_folder + '/best_model')
-    #
-    #     for _ in range(num_test_days):
-    #         a, b = sess.run(test_dataset.next_item)
-    #         print(a)
-    #         print('prediction')
-    #         print(np.round(model.predict(a)))
-    #         print('output')
-    #         print(b)
-    #
-    #     perform_testing(model, test_dataset.iterator, verbose=True)
-
     #  run training
     run()
