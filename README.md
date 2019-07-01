@@ -10,4 +10,4 @@ Run these steps 3 times to create Train, Test, and validation inputs:
 4. Run create_requests_dataset.py which creates synthetic dataset.
 5. Run create_LSTM_input.py that converts the input to one-hot encoding format.
 6. Run LSTM.py to train the LSTM network.
-7. Run caching.py to print caching costs and experience scores for each method. 
+7. Run caching.py to calculate and print caching costs and experience scores for each method. 
