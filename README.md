@@ -13,3 +13,12 @@ Run these steps 3 times to create Train, Test, and validation inputs:
 After creating the inputs:
 Run LSTM.py to train the LSTM network.
 Run caching.py to calculate and print caching costs and experience scores for each method. 
+
+#Citation
+@inproceedings{zehtabian2020predictive,
+  title={Predictive Caching for AR/VR Experiences in a Household Scenario},
+  author={Zehtabian, Sharare and Razghandi, Mina and B{\"o}l{\"o}ni, Ladislau and Turgut, Damla},
+  booktitle={2020 International Conference on Computing, Networking and Communications (ICNC)},
+  pages={591--595},
+  year={2020},
+}
