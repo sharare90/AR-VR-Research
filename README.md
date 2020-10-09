@@ -16,8 +16,7 @@ Run caching.py to calculate and print caching costs and experience scores for ea
 
 ## Datasets
 
-[Dataset 1](http://sites.google.com/
-site/tim0306/): 
+[Dataset 1](http://sites.google.com/site/tim0306/): 
 T. L. van  Kasteren, G. Englebienne, and B. J.  Kr ̈ose, “Human activityrecognition  from  wireless  sensor  network  data:  Benchmark  and  soft-ware,”  in Activity  Recognition  in  Pervasive  Intelligent  Environments.Springer, 2011, pp. 165–186.
 
 The dataset describes the activities of a 26-year-old man in a smart home with 14 state-change sensors installed at doors, cupboards, the refrigerator, and the toilet flush.
