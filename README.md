@@ -28,10 +28,9 @@ We used dataset #14 (Cairo). This dataset collected by CASAS research group desc
 
 ## Citation
 
-Link: [Here](https://ieeexplore.ieee.org/abstract/document/9049692)
+Click [here](https://ieeexplore.ieee.org/abstract/document/9049692) or [here](http://www.eecs.ucf.edu/~turgut/Research/Publications/Download/Zehtabian-2020-ICNC.pdf) to download the paper.
 
 @inproceedings{zehtabian2020predictive,
-
   title={Predictive Caching for AR/VR Experiences in a Household Scenario},  
   author={Zehtabian, Sharare and Razghandi, Mina and B{\"o}l{\"o}ni, Ladislau and Turgut, Damla}  
   booktitle={2020 International Conference on Computing, Networking and Communications (ICNC)},  
