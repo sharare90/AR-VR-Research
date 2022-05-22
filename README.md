@@ -29,6 +29,7 @@ We used dataset #14 (Cairo). This dataset collected by CASAS research group desc
 ## Citation
 
 https://www.eecs.ucf.edu/~turgut/Research/Publications/Download/Zehtabian-2021-PMC.pdf
+
 @article{zehtabian2021modeling,
   title={Modeling an intelligent controller for predictive caching in AR/VR-enabled home scenarios},
   author={Zehtabian, Sharare and Khodadadeh, Siavash and B{\"o}l{\"o}ni, Ladislau and Turgut, Damla},
@@ -38,7 +39,10 @@ https://www.eecs.ucf.edu/~turgut/Research/Publications/Download/Zehtabian-2021-P
   year={2021},
   publisher={Elsevier}
 }
+
+
 http://www.eecs.ucf.edu/~turgut/Research/Publications/Download/Zehtabian-2020-ICNC.pdf
+
 @inproceedings{zehtabian2020predictive,
   title={Predictive Caching for AR/VR Experiences in a Household Scenario},  
   author={Zehtabian, Sharare and Razghandi, Mina and B{\"o}l{\"o}ni, Ladislau and Turgut, Damla}  
