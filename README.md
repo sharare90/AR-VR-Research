@@ -39,6 +39,6 @@ We used dataset #14 (Cairo). This dataset collected by CASAS research group desc
   publisher={Elsevier}
 }
  
-Download the paper from [here](https://www.eecs.ucf.edu/~turgut/Research/Publications/Download/Zehtabian-2021-PMC.pdf)
+Download the paper from [here](https://www.eecs.ucf.edu/~turgut/Research/Publications/Download/Zehtabian-2021-PMC.pdf).
  
  
